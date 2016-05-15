@@ -1,8 +1,9 @@
 Rails.application.routes.draw do
-  get 'meetups/new'
+
+  root 'welcome#index'
 
   resources :examples
-  root 'welcome#index'
+  resources :meetups, only: [ :new, :create ]
 
 
   # The priority is based upon order of creation: first created -> highest priority.
