@@ -2,6 +2,27 @@
 
 DOM = React.DOM
 
+
+############## Separator #################
+
+Separator = React.createClass
+  displayName: 'Separator'
+  render: () ->
+    children = []
+    for child, i in @props.children
+      children.push( child )
+      if i < @props.children.length - 1
+        children.push(
+          DOM.div
+            key: "separator-#{i}"
+            className: 'col-lg-offset-2 col-lg-10'
+            DOM.hr
+              className: 'form-input-separator'
+        )
+    DOM.div(null, children)
+
+separator = React.createFactory(Separator)
+
 ############## FormInputWithLabelAndReset #################
 
 FormInputWithLabelAndReset = React.createClass
@@ -134,7 +155,8 @@ FormInputWithLabel = React.createClass
         className: "col-lg-2 control-label"
         @props.labelText
       DOM.div
-        className: "col-lg-10"
+        className: "col-lg-10" + { true: 'has-warning', false: '' }[!!@props.warning]
+        @warning()
         DOM[@props.elementType]
           className: "form-control"
           placeholder: @props.placeholder
@@ -148,8 +170,14 @@ FormInputWithLabel = React.createClass
       "textArea": null
     }[@props.ElementType]
 
-formInputWithLabel = React.createFactory(FormInputWithLabel)
+  warning: ->
+    return null unless @props.warning
+    DOM.label
+      className: 'control-label'
+      htmlFor: @props.id
+      @props.warning
 
+formInputWithLabel = React.createFactory(FormInputWithLabel)
 
 ############## CreateNewMeetupForm #################
 
@@ -162,7 +190,12 @@ window.CreateNewMeetupForm = React.createClass
         title: "",
         description: ""
         date: new Date()
-        seoText: null
+        seoText: null,
+        guests: [""]
+      },
+
+      warnings: {
+        title: null
       }
     }
 
@@ -176,21 +209,45 @@ window.CreateNewMeetupForm = React.createClass
     @state.meetup.seoText = seoText
     @forceUpdate()
 
+  guestEmailChanged: (number, event) ->
+    guests = @state.meetup.guests
+    guests[number] = event.target.value
+
+    lastEmail           = guests[guests.length - 1]
+    penultimateEmail    = guests[guests.length - 2]
+
+    if (lastEmail != "")
+      guests.push("")
+    if guests.length >= 2 & lastEmail == "" && penultimateEmail == ""
+      guests.pop()
+
+    @forceUpdate()
+
   dateChanged: (newDate) ->
     @state.meetup.date = newDate
     @forceUpdate()
 
   titleChanged: (event) ->
     @state.meetup.title = event.target.value
+    @validateTitle()
     @forceUpdate()
 
   descriptionChanged: (event) ->
     @state.meetup.description = event.target.value
     @forceUpdate()
 
+  validateTitle: () ->
+    @state.warnings.title = if /\S/.test(@state.meetup.title) then null else "Cannot be blank"
+
   formSubmitted: (event) ->
     event.preventDefault()
     meetup = @state.meetup
+
+    @validateTitle()
+    @forceUpdate()
+
+    for own key of meetup
+      reutrn if @state.warnings[key]
 
     $.ajax
       url: '/meetups.json'
@@ -205,6 +262,7 @@ window.CreateNewMeetupForm = React.createClass
         description: @state.meetup.description
         date: @state.meetup.date
         seo: @state.meetup.seoText || @computeDefaultSeoText()
+        guests: @state.meetup.guests
 
       })
 
@@ -222,6 +280,7 @@ window.CreateNewMeetupForm = React.createClass
           value: @state.meetup.title
           onChange: @titleChanged
           elementType: 'input'
+          warning: @state.warnings.title
 
         formInputWithLabel
           id: 'description'
@@ -241,6 +300,22 @@ window.CreateNewMeetupForm = React.createClass
           onChange: @seoChanged
           placeHolder: 'SEO Text'
           labelText: 'seo'
+
+        DOM.fieldset null,
+          DOM.legend null, "Guests"
+          separator null,
+            for guest, n in @state.meetup.guests
+              ((i) =>
+                formInputWithLabel
+                  id: "email"
+                  key: "guest-#{i}"
+                  value: guest
+                  onChange: (event) =>
+                    @guestEmailChanged(i, event)
+                  placeholder: "Email address of an invitee"
+                  labelText: "Email"
+                  elementType: 'input'
+              )(n)
 
         DOM.div
           className: "form-group"
