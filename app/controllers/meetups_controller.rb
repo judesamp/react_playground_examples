@@ -9,7 +9,7 @@ class MeetupsController < ApplicationController
 
       if @meetup.save
         format.html { redirect_to @meetup, notice: 'Meetup was successfully created' }
-        format.json { head :ok }
+        format.json { render json: @meetup, status: 200 }
       else
         format.html { render :new }
         format.json { render json: @meetup.errors, status: :unprocessable_entity }
@@ -20,6 +20,6 @@ class MeetupsController < ApplicationController
 
   private
   def meetup_params
-    params.require(:meetup).permit(:title, :description, :date, :seo, guests: [])
+    params.require(:meetup).permit(:title, :description, :date, :seo, :technology, guests: [])
   end
 end

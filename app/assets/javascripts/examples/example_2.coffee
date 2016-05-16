@@ -188,10 +188,11 @@ window.CreateNewMeetupForm = React.createClass
     {
       meetup: {
         title: "",
-        description: ""
-        date: new Date()
+        description: "",
+        date: new Date(),
         seoText: null,
-        guests: [""]
+        guests: [""],
+        technology: @props.technologies[0].name
       },
 
       warnings: {
@@ -204,6 +205,10 @@ window.CreateNewMeetupForm = React.createClass
     words.push(monthName(@state.meetup.date.getMonth()))
     words.push(@state.meetup.date.getFullYear().toString())
     words.filter( (string) -> string.trim().length > 0).join("-").toLowerCase()
+
+  technologyChanged: (event) ->
+    @state.meetup.technology = event.target.value
+    @forceUpdate()
 
   seoChanged: (seoText) ->
     @state.meetup.seoText = seoText
@@ -261,10 +266,16 @@ window.CreateNewMeetupForm = React.createClass
         title: @state.meetup.title
         description: @state.meetup.description
         date: @state.meetup.date
-        seo: @state.meetup.seoText || @computeDefaultSeoText()
+        seo: @state.meetup.seoText || @computeDefaultSEOText()
         guests: @state.meetup.guests
+        technology: @state.meetup.technology
 
       })
+      success: (data, textStatus, jqXHR) ->
+        alert('okay, this is ugly, but the meetup was successfully saved. In real application, would clear the the form and respond prettily :)')
+      error: (error) ->
+        console.log(error)
+
 
   render: ->
     DOM.form
@@ -293,6 +304,20 @@ window.CreateNewMeetupForm = React.createClass
         dateWithLabel
           onChange: @dateChanged
           date: @state.meetup.date
+
+        DOM.div
+          className: 'form-group'
+          DOM.label
+            htmlFor: 'technology'
+            className: 'col-lg-2 control-label'
+            "Technology"
+          DOM.div
+            className: 'col-lg-10'
+            DOM.select
+              className: 'form-control'
+              onChange: @technologyChanged
+              value: @state.meetup.technology
+              DOM.option(value: tech.name, key: tech.id, tech.name) for tech in @props.technologies
 
         formInputWithLabelAndReset
           id: 'seo'

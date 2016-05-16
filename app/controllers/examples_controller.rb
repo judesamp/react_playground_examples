@@ -10,6 +10,7 @@ class ExamplesController < ApplicationController
   # GET /examples/1
   # GET /examples/1.json
   def show
+    @technologies = Technology.all.to_a
   end
 
   # GET /examples/new
