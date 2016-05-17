@@ -2,7 +2,6 @@
 
 DOM = React.DOM
 
-
 ############## Separator #################
 
 Separator = React.createClass
@@ -352,4 +351,3 @@ window.CreateNewMeetupForm = React.createClass
               "Save"
 
 createNewMeetupForm = React.createFactory(CreateNewMeetupForm)
-

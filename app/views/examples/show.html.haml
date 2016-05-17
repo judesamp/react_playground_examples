@@ -11,7 +11,13 @@
   - if @example.name == 'Simple Link Example'
     %div{ id: @example.name.gsub!(/( )/, '_').downcase! }
   - else
-    = react_component(@example.react_component_name, {technologies: @technologies}, {class: "container"})
+    - case @example.name
+    - when 'Validation Example'
+      - props = { name: 'test', type: 'experimental', content: 'blog post content here.', date: '10-30-1973'} 
+    - else
+      - props = { technologies: @technologies }
+
+    = react_component(@example.react_component_name, props, {class: "container"})
   %br
   %br
   -# - file_name = Rails.root.join('app', 'assets', 'javascripts', 'examples', "example_#{@example.id}.coffee")
